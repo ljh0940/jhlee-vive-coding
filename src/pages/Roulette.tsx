@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import {
   Card,
   Button,
@@ -196,7 +194,7 @@ export default function RoulettePage() {
 
         {/* 네비게이션 */}
         <div className="text-center mt-8">
-          <Link href="/" className="navigation-link">
+          <Link to="/" className="navigation-link">
             ← 홈으로 돌아가기
           </Link>
         </div>

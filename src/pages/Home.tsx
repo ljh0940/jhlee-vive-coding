@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
@@ -12,12 +9,11 @@ export default function Home() {
         <div className="content-max-width-lg text-center">
           <main className="space-y-12">
             <div className="logo-container">
-              <Image
+              <img
                 src="/icons/app-logo.svg"
                 alt="Lucky Numbers"
                 width={120}
                 height={120}
-                priority
               />
             </div>
             <div className="card-glass p-6 mb-8">
@@ -35,18 +31,18 @@ export default function Home() {
                 {/* 사용자 정보 표시 */}
                 <div className="user-profile">
                   <div className="user-avatar">
-                    {user.firstName.charAt(0).toUpperCase()}
+                    {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{user.firstName} {user.lastName}님</h3>
+                  <h3 className="text-xl font-semibold mb-2">{user.name}님</h3>
                   <p className="text-white/80">{user.email}</p>
                 </div>
 
                 {/* 메뉴 버튼들 */}
                 <div className="flex gap-4 justify-center flex-wrap">
-                  <Link href="/lotto" className="btn btn-primary btn-large">
+                  <Link to="/lotto" className="btn btn-primary btn-large">
                     🎰 로또 생성기
                   </Link>
-                  <Link href="/roulette" className="btn btn-primary btn-large">
+                  <Link to="/roulette" className="btn btn-primary btn-large">
                     🎯 룰렛 추첨
                   </Link>
                   <button onClick={logout} className="btn btn-danger">
@@ -57,16 +53,16 @@ export default function Home() {
             ) : (
               // 로그인되지 않은 상태
               <div className="flex gap-4 justify-center flex-wrap">
-                <Link href="/lotto" className="btn btn-primary btn-large">
+                <Link to="/lotto" className="btn btn-primary btn-large">
                   🎰 로또 생성기
                 </Link>
-                <Link href="/roulette" className="btn btn-primary btn-large">
+                <Link to="/roulette" className="btn btn-primary btn-large">
                   🎯 룰렛 추첨
                 </Link>
-                <Link href="/login" className="btn btn-outline">
+                <Link to="/login" className="btn btn-outline">
                   로그인
                 </Link>
-                <Link href="/signup" className="btn btn-secondary">
+                <Link to="/signup" className="btn btn-secondary">
                   회원가입
                 </Link>
               </div>

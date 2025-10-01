@@ -1,17 +1,17 @@
-"use client";
-
 import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const { signup, loginWithOAuth2, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,15 +21,34 @@ export default function Signup() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log("Signup attempt:", formData);
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("비밀번호는 최소 8자 이상이어야 합니다.");
+      return;
+    }
+
+    const success = await signup(formData.email, formData.password, formData.name);
+    if (success) {
+      navigate("/");
+    } else {
+      setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // Handle social login logic here
-    console.log(`${provider} signup clicked`);
+    if (provider === 'Google' || provider === 'GitHub') {
+      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github');
+    } else {
+      console.log(`${provider} signup not implemented yet`);
+    }
   };
 
   return (
@@ -38,12 +57,11 @@ export default function Signup() {
         <div className="content-max-width">
           <div className="card p-8">
             <div className="logo-container">
-              <Image
+              <img
                 src="/icons/app-logo.svg"
                 alt="Lucky Numbers"
                 width={80}
                 height={80}
-                priority
               />
             </div>
             <h2 className="page-title">
@@ -51,12 +69,11 @@ export default function Signup() {
             </h2>
             <p className="page-subtitle">
               또는{" "}
-              <Link href="/login" className="navigation-link">
+              <Link to="/login" className="navigation-link">
                 기존 계정으로 로그인
               </Link>
             </p>
 
-            {/* Social Login Section */}
             <div className="divider-section">
               <div className="divider-text">
                 <span>또는 다음으로 계속</span>
@@ -69,7 +86,7 @@ export default function Signup() {
                 onClick={() => handleSocialLogin("Google")}
                 className="btn btn-secondary flex items-center justify-center space-x-2"
               >
-                <Image
+                <img
                   src="/icons/google.svg"
                   alt="Google"
                   width={20}
@@ -83,7 +100,7 @@ export default function Signup() {
                 onClick={() => handleSocialLogin("GitHub")}
                 className="btn btn-secondary flex items-center justify-center space-x-2"
               >
-                <Image
+                <img
                   src="/icons/github.svg"
                   alt="GitHub"
                   width={20}
@@ -97,7 +114,7 @@ export default function Signup() {
                 onClick={() => handleSocialLogin("Kakao")}
                 className="btn btn-secondary flex items-center justify-center space-x-2"
               >
-                <Image
+                <img
                   src="/icons/kakao.svg"
                   alt="카카오"
                   width={20}
@@ -111,7 +128,7 @@ export default function Signup() {
                 onClick={() => handleSocialLogin("Naver")}
                 className="btn btn-secondary flex items-center justify-center space-x-2"
               >
-                <Image
+                <img
                   src="/icons/naver.svg"
                   alt="네이버"
                   width={20}
@@ -122,40 +139,28 @@ export default function Signup() {
             </div>
 
             <form className="form-section" onSubmit={handleSubmit}>
+              {error && (
+                <div className="error-message bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+
               <div className="form-section">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="form-group">
-                    <label htmlFor="first-name" className="form-label">
-                      성
-                    </label>
-                    <input
-                      id="first-name"
-                      name="firstName"
-                      type="text"
-                      autoComplete="given-name"
-                      required
-                      className="input-field"
-                      placeholder="성을 입력하세요"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="last-name" className="form-label">
-                      이름
-                    </label>
-                    <input
-                      id="last-name"
-                      name="lastName"
-                      type="text"
-                      autoComplete="family-name"
-                      required
-                      className="input-field"
-                      placeholder="이름을 입력하세요"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                    />
-                  </div>
+                <div className="form-group">
+                  <label htmlFor="name" className="form-label">
+                    이름
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    className="input-field"
+                    placeholder="이름을 입력하세요"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -220,11 +225,11 @@ export default function Signup() {
                 />
                 <label htmlFor="agree-terms" className="text-sm text-gray-700">
                   다음에 동의합니다{" "}
-                  <Link href="#" className="navigation-link">
+                  <Link to="#" className="navigation-link">
                     서비스 약관
                   </Link>{" "}
                   및{" "}
-                  <Link href="#" className="navigation-link">
+                  <Link to="#" className="navigation-link">
                     개인정보 처리방침
                   </Link>
                 </label>
@@ -233,12 +238,13 @@ export default function Signup() {
               <button
                 type="submit"
                 className="btn btn-primary w-full"
+                disabled={isLoading}
               >
-                계정 만들기
+                {isLoading ? '계정 생성 중...' : '계정 만들기'}
               </button>
 
               <div className="text-center">
-                <Link href="/" className="navigation-link">
+                <Link to="/" className="navigation-link">
                   ← 홈으로 돌아가기
                 </Link>
               </div>

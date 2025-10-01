@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 export interface LogoProps {
@@ -15,12 +14,11 @@ export const Logo = ({ size = 'medium', className }: LogoProps) => {
 
   return (
     <div className={cn('logo-container', className)}>
-      <Image
+      <img
         src="/icons/app-logo.svg"
         alt="Lucky Numbers"
         width={sizeMap[size]}
         height={sizeMap[size]}
-        priority
       />
     </div>
   );

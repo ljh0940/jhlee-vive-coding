@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 interface LotteryApiResponse {
   returnValue: string;
   drwNoDate: string;
@@ -15,7 +13,7 @@ interface LotteryApiResponse {
   drwNo: number;
 }
 
-interface LotteryNumber {
+export interface LotteryNumber {
   round: number;
   date: string;
   numbers: number[];
@@ -43,7 +41,6 @@ async function fetchLotteryNumber(round: number): Promise<LotteryNumber | null> 
           'Accept': 'application/json, text/plain, */*',
           'Referer': 'https://dhlottery.co.kr/',
         },
-        next: { revalidate: 3600 }, // 1시간 캐시
       }
     );
 
@@ -82,7 +79,7 @@ function formatDate(dateStr: string): string {
   return dateStr.replace(/-/g, '.');
 }
 
-export async function GET() {
+export async function getRecentLotteryNumbers() {
   try {
     const estimatedCurrentRound = getCurrentEstimatedRound();
     const results: LotteryNumber[] = [];
@@ -101,7 +98,7 @@ export async function GET() {
 
     // 데이터를 찾지 못한 경우 fallback 데이터 사용
     if (results.length === 0) {
-      return NextResponse.json({
+      return {
         success: false,
         data: [],
         message: 'API 데이터를 가져올 수 없어 fallback 데이터를 사용합니다.',
@@ -112,19 +109,19 @@ export async function GET() {
           { round: 1151, date: '2024.03.02', numbers: [7, 11, 17, 22, 35, 40], bonus: 14 },
           { round: 1150, date: '2024.02.24', numbers: [4, 9, 18, 24, 32, 45], bonus: 21 },
         ],
-      });
+      };
     }
 
-    return NextResponse.json({
+    return {
       success: true,
       data: results,
       lastUpdated: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     console.error('Lottery API error:', error);
 
     // 에러 발생 시 fallback 데이터 반환
-    return NextResponse.json({
+    return {
       success: false,
       data: [],
       message: '서버 오류로 인해 fallback 데이터를 사용합니다.',
@@ -135,6 +132,6 @@ export async function GET() {
         { round: 1151, date: '2024.03.02', numbers: [7, 11, 17, 22, 35, 40], bonus: 14 },
         { round: 1150, date: '2024.02.24', numbers: [4, 9, 18, 24, 32, 45], bonus: 21 },
       ],
-    });
+    };
   }
 }

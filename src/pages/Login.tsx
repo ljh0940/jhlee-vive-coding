@@ -1,8 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
@@ -16,8 +13,8 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isLoading } = useAuth();
-  const router = useRouter();
+  const { login, loginWithOAuth2, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,15 +22,18 @@ export default function Login() {
 
     const success = await login(email, password);
     if (success) {
-      router.push("/");
+      navigate("/");
     } else {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // Handle social login logic here
-    console.log(`${provider} login clicked`);
+    if (provider === 'Google' || provider === 'GitHub') {
+      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github');
+    } else {
+      console.log(`${provider} login not implemented yet`);
+    }
   };
 
   return (
@@ -47,7 +47,7 @@ export default function Login() {
             </h2>
             <p className="page-subtitle">
               또는{" "}
-              <Link href="/signup" className="navigation-link">
+              <Link to="/signup" className="navigation-link">
                 새 계정 만들기
               </Link>
             </p>
@@ -99,7 +99,7 @@ export default function Login() {
                   </label>
                 </div>
 
-                <Link href="#" className="navigation-link text-sm">
+                <Link to="#" className="navigation-link text-sm">
                   비밀번호를 잊으셨나요?
                 </Link>
               </div>
@@ -115,7 +115,7 @@ export default function Login() {
               </Button>
 
               <div className="text-center">
-                <Link href="/" className="navigation-link">
+                <Link to="/" className="navigation-link">
                   ← 홈으로 돌아가기
                 </Link>
               </div>

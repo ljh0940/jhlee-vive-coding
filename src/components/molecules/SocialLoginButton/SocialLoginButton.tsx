@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Button, ButtonProps } from '@/components/atoms/Button';
 
 export interface SocialLoginButtonProps extends Omit<ButtonProps, 'children'> {
@@ -39,7 +38,7 @@ export const SocialLoginButton = ({
       className="flex items-center justify-center space-x-2"
       {...buttonProps}
     >
-      <Image
+      <img
         src={config.icon}
         alt={config.label}
         width={20}

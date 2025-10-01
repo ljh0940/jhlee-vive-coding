@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# jhlee-vive-coding
 
-## Getting Started
+로또 번호를 생성하고 당첨 번호를 표시하는 Vite + React 기반 로또 웹사이트 애플리케이션입니다.
 
-First, run the development server:
+## 시작하기
+
+### 의존성 설치
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 개발 서버 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 결과를 확인하세요.
 
-## Learn More
+### 프로덕션 빌드
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 빌드 미리보기
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm preview
+```
 
-## Deploy on Vercel
+## 기술 스택
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Vite** - 빠른 개발 서버와 최적화된 빌드
+- **React 19** - UI 라이브러리
+- **TypeScript** - 타입 안전성
+- **React Router** - 클라이언트 사이드 라우팅
+- **Tailwind CSS 4** - 유틸리티 우선 CSS 프레임워크
+- **pnpm** - 빠르고 효율적인 패키지 매니저
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 주요 기능
+
+- 🎰 로또 번호 생성기 (1-45 사이의 6개 번호 + 보너스)
+- 🎯 룰렛 추첨 시스템
+- 🏆 최근 당첨 번호 조회 (dhlottery.co.kr API)
+- 🔐 사용자 인증 (Mock)
+- 📱 반응형 디자인
+- 🌙 다크 모드 지원
+
+## 프로젝트 구조
+
+```
+src/
+├── components/       # Atomic Design 컴포넌트
+│   ├── atoms/       # 기본 빌딩 블록
+│   ├── molecules/   # 단순한 컴포넌트 조합
+│   └── organisms/   # 복잡한 컴포넌트
+├── contexts/        # React Context (인증)
+├── pages/           # 페이지 컴포넌트
+├── services/        # API 서비스
+├── lib/             # 유틸리티 함수
+└── App.tsx          # 메인 App + Router
+```
+
+## 라우트
+
+- `/` - 홈 페이지
+- `/login` - 로그인
+- `/signup` - 회원가입
+- `/lotto` - 로또 번호 생성기
+- `/roulette` - 룰렛 추첨
+
+## 라이선스
+
+MIT

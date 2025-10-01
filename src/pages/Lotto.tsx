@@ -1,13 +1,12 @@
-"use client";
-
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   LottoGenerator,
   WinningNumbers,
   Card,
   LottoNumberSet
 } from "@/components";
+import { getRecentLotteryNumbers } from "@/services/lotteryService";
 
 export default function LottoPage() {
   const [history, setHistory] = useState<Array<{numbers: number[], bonus: number, timestamp: Date}>>([]);
@@ -32,47 +31,15 @@ export default function LottoPage() {
   const fetchWinningNumbers = async () => {
     setIsLoadingWinning(true);
     try {
-      // First, get the latest round number by calling without drwNo parameter
-      const latestResponse = await fetch('https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=');
-      const latestResult = await latestResponse.json();
+      const result = await getRecentLotteryNumbers();
 
-      if (!latestResult.drwNo) {
-        throw new Error('Failed to get latest round number');
+      if (result.success && result.data.length > 0) {
+        setRecentWinningNumbers(result.data);
+        setWinningDataSource('api');
+      } else if (result.fallback) {
+        setRecentWinningNumbers(result.fallback);
+        setWinningDataSource('sample');
       }
-
-      const latestRound = latestResult.drwNo;
-
-      // Fetch latest 5 rounds of winning numbers
-      const promises = [];
-      for (let i = 0; i < 5; i++) {
-        promises.push(
-          fetch(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${latestRound - i}`)
-            .then(res => res.json())
-        );
-      }
-
-      const results = await Promise.all(promises);
-
-      // Update recentWinningNumbers with actual data
-      const newWinningNumbers = results
-        .filter(result => result.drwNo) // Filter out invalid results
-        .map(result => ({
-          round: result.drwNo,
-          numbers: [
-            result.drwtNo1,
-            result.drwtNo2,
-            result.drwtNo3,
-            result.drwtNo4,
-            result.drwtNo5,
-            result.drwtNo6
-          ],
-          bonus: result.bnusNo,
-          date: result.drwNoDate
-        }));
-
-      setRecentWinningNumbers(newWinningNumbers);
-      setWinningDataSource('api');
-      console.log(`Fetched latest ${newWinningNumbers.length} rounds starting from round ${latestRound}:`, newWinningNumbers);
     } catch (error) {
       console.error('Failed to fetch winning numbers:', error);
       setWinningDataSource('sample');
@@ -80,6 +47,10 @@ export default function LottoPage() {
       setIsLoadingWinning(false);
     }
   };
+
+  useEffect(() => {
+    fetchWinningNumbers();
+  }, []);
 
   const getNumberColor = (num: number) => {
     if (num <= 10) return 'bg-yellow-500';
@@ -152,7 +123,7 @@ export default function LottoPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {recentWinningNumbers.map((winning, index) => (
+              {recentWinningNumbers.map((winning) => (
               <div key={winning.round} className="card-glass p-4">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -210,7 +181,7 @@ export default function LottoPage() {
 
         {/* 하단 네비게이션 */}
         <div className="text-center mt-12">
-          <Link href="/" className="navigation-link text-lg">
+          <Link to="/" className="navigation-link text-lg">
             ← 홈으로 돌아가기
           </Link>
         </div>
