@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { authService, UserResponse } from "@/services/authService";
+import { authService } from "@/services/authService";
 
 interface User {
   id: number;
