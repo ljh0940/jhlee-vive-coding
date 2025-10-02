@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
@@ -16,8 +17,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
-          <Route path="/lotto" element={<Lotto />} />
-          <Route path="/roulette" element={<Roulette />} />
+          <Route path="/lotto" element={<ProtectedRoute><Lotto /></ProtectedRoute>} />
+          <Route path="/roulette" element={<ProtectedRoute><Roulette /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </Router>

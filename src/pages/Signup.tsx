@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
@@ -12,6 +12,9 @@ export default function Signup() {
   const [error, setError] = useState("");
   const { signup, loginWithOAuth2, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = ((location.state as any)?.from?.pathname as string) || "/";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,7 +40,7 @@ export default function Signup() {
 
     const success = await signup(formData.email, formData.password, formData.name);
     if (success) {
-      navigate("/");
+      navigate(from, { replace: true });
     } else {
       setError("회원가입에 실패했습니다. 다시 시도해주세요.");
     }
@@ -45,7 +48,7 @@ export default function Signup() {
 
   const handleSocialLogin = (provider: string) => {
     if (provider === 'Google' || provider === 'GitHub') {
-      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github');
+      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github', from);
     } else {
       console.log(`${provider} signup not implemented yet`);
     }

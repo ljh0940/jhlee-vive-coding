@@ -92,8 +92,17 @@ class AuthService {
   }
 
   // OAuth2 로그인
-  initiateOAuth2Login(provider: 'google' | 'github'): void {
+  initiateOAuth2Login(provider: 'google' | 'github', from?: string): void {
+    if (from) {
+      localStorage.setItem('oauth2_redirect_from', from);
+    }
     window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
+  }
+
+  getOAuth2RedirectPath(): string {
+    const path = localStorage.getItem('oauth2_redirect_from') || '/';
+    localStorage.removeItem('oauth2_redirect_from');
+    return path;
   }
 }
 

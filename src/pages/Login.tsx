@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
@@ -15,6 +15,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const { login, loginWithOAuth2, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = ((location.state as any)?.from?.pathname as string) || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +25,7 @@ export default function Login() {
 
     const success = await login(email, password);
     if (success) {
-      navigate("/");
+      navigate(from, { replace: true });
     } else {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
     }
@@ -30,7 +33,7 @@ export default function Login() {
 
   const handleSocialLogin = (provider: string) => {
     if (provider === 'Google' || provider === 'GitHub') {
-      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github');
+      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github', from);
     } else {
       console.log(`${provider} login not implemented yet`);
     }

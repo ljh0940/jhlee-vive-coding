@@ -24,9 +24,9 @@ export default function OAuth2Redirect() {
         tokenType: 'Bearer',
       });
 
-      // 사용자 정보를 가져오는 대신 홈으로 리다이렉트
-      // AuthContext가 자동으로 사용자 정보를 로드할 것입니다
-      navigate('/');
+      // OAuth2 로그인 시작 전에 저장한 경로로 리다이렉트
+      const redirectPath = authService.getOAuth2RedirectPath();
+      navigate(redirectPath, { replace: true });
     } else {
       navigate('/login?error=' + encodeURIComponent('토큰을 받지 못했습니다'));
     }

@@ -44,30 +44,30 @@ export const LottoGenerator = ({ onNumbersGenerated }: LottoGeneratorProps) => {
   };
 
   return (
-    <Card className="p-8 mb-8">
-      <div className="text-center mb-8">
-        <h2 className="page-title text-2xl">당신의 로또 번호</h2>
+    <Card className="p-4 mb-6">
+      <div className="text-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">당신의 로또 번호</h2>
 
         {numbers.length > 0 ? (
-          <div className="flex flex-col items-center space-y-6">
+          <div className="flex flex-col items-center">
             <LottoNumberSet
               numbers={numbers}
               bonusNumber={bonusNumber || undefined}
-              size="large"
+              size="medium"
               className="justify-center"
             />
           </div>
         ) : (
-          <Card variant="glass" className="p-12 text-center">
-            <p className="text-gray-500 text-xl font-medium">번호를 생성해보세요!</p>
+          <Card variant="glass" className="p-6 text-center">
+            <p className="text-gray-500 text-sm">번호를 생성해보세요!</p>
           </Card>
         )}
       </div>
 
-      <div className="flex justify-center space-x-4 mt-8">
+      <div className="flex justify-center space-x-3 mt-4">
         <Button
           variant="primary"
-          size="large"
+          size="medium"
           onClick={generateLotto}
           isLoading={isGenerating}
         >
@@ -77,9 +77,10 @@ export const LottoGenerator = ({ onNumbersGenerated }: LottoGeneratorProps) => {
         {numbers.length > 0 && (
           <Button
             variant="secondary"
+            size="medium"
             onClick={clearNumbers}
           >
-            전체 삭제
+            삭제
           </Button>
         )}
       </div>

@@ -17,7 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
-  loginWithOAuth2: (provider: 'google' | 'github') => void;
+  loginWithOAuth2: (provider: 'google' | 'github', from?: string) => void;
   isLoading: boolean;
 }
 
@@ -87,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authService.clearTokens();
   };
 
-  const loginWithOAuth2 = (provider: 'google' | 'github') => {
-    authService.initiateOAuth2Login(provider);
+  const loginWithOAuth2 = (provider: 'google' | 'github', from?: string) => {
+    authService.initiateOAuth2Login(provider, from);
   };
 
   return (
