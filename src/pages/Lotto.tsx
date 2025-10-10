@@ -136,8 +136,9 @@ export default function LottoPage() {
       if (result.success && result.data.length > 0) {
         setRecentWinningNumbers(result.data);
         setWinningDataSource('api');
-      } else if (result.fallback) {
-        setRecentWinningNumbers(result.fallback);
+      } else {
+        // success가 false인 경우 fallback 데이터 사용
+        setRecentWinningNumbers(result.data);
         setWinningDataSource('sample');
       }
     } catch (error) {
