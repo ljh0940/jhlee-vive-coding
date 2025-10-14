@@ -68,11 +68,11 @@ export default function Login() {
                 <Input
                   id="email-address"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
-                  label="이메일 주소"
-                  placeholder="이메일 주소를 입력하세요"
+                  label="이메일 또는 아이디"
+                  placeholder="이메일 또는 아이디를 입력하세요"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
