@@ -14,6 +14,7 @@ interface User {
   providerId?: string;
   createdAt: string;
   updatedAt: string;
+  active: boolean;
 }
 
 function Admin() {
@@ -124,6 +125,64 @@ function Admin() {
       : 'bg-green-100 text-green-800';
   };
 
+  const handleDeleteUser = async (userId: number, userName: string) => {
+    if (!confirm(`정말 "${userName}" 사용자를 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users/${userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('사용자 삭제에 실패했습니다');
+      }
+
+      alert('사용자가 삭제되었습니다');
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '오류가 발생했습니다');
+    }
+  };
+
+  const handleToggleActive = async (userId: number, userName: string, currentStatus: boolean) => {
+    const action = currentStatus ? '비활성화' : '활성화';
+    if (!confirm(`"${userName}" 사용자를 ${action}하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const endpoint = currentStatus ? 'deactivate' : 'activate';
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users/${userId}/${endpoint}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`사용자 ${action}에 실패했습니다`);
+      }
+
+      alert(`사용자가 ${action}되었습니다`);
+      fetchUsers();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '오류가 발생했습니다');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
       {/* Header */}
@@ -217,14 +276,20 @@ function Admin() {
                       권한
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      상태
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       가입일
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      관리
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                         등록된 회원이 없습니다.
                       </td>
                     </tr>
@@ -271,8 +336,39 @@ function Admin() {
                             {u.role}
                           </span>
                         </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                              u.active
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {u.active ? '활성' : '비활성'}
+                          </span>
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                           {formatDate(u.createdAt)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleToggleActive(u.id, u.name, u.active)}
+                              className={`px-3 py-1 text-xs font-medium rounded ${
+                                u.active
+                                  ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                                  : 'bg-green-100 text-green-800 hover:bg-green-200'
+                              }`}
+                            >
+                              {u.active ? '비활성화' : '활성화'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.name)}
+                              className="px-3 py-1 text-xs font-medium rounded bg-red-100 text-red-800 hover:bg-red-200"
+                            >
+                              삭제
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
