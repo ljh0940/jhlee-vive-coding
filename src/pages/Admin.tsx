@@ -25,10 +25,20 @@ function Admin() {
   const [error, setError] = useState<string | null>(null);
   const [userCount, setUserCount] = useState(0);
 
+  // 관리자 권한 확인
   useEffect(() => {
-    fetchUsers();
-    fetchUserCount();
-  }, []);
+    if (user && user.role !== 'ADMIN') {
+      alert('관리자 권한이 필요합니다.');
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      fetchUsers();
+      fetchUserCount();
+    }
+  }, [user]);
 
   const fetchUsers = async () => {
     try {
