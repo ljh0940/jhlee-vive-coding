@@ -45,6 +45,9 @@ export default function Home() {
                   <Link to="/roulette" className="btn btn-primary btn-large">
                     🎯 룰렛 추첨
                   </Link>
+                  <Link to="/admin" className="btn btn-secondary btn-large">
+                    👥 관리자 페이지
+                  </Link>
                   <button onClick={logout} className="btn btn-danger">
                     로그아웃
                   </button>
