@@ -28,8 +28,7 @@ function Admin() {
   // 관리자 권한 확인
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
-      alert('관리자 권한이 필요합니다.');
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
