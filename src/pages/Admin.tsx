@@ -32,11 +32,26 @@ function Admin() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다. 다시 로그인해주세요.');
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users`
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
 
       if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('관리자 권한이 필요합니다.');
+        }
         throw new Error('Failed to fetch users');
       }
 
@@ -52,8 +67,20 @@ function Admin() {
 
   const fetchUserCount = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        return;
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users/count`
+        `${import.meta.env.VITE_API_BASE_URL}/api/admin/users/count`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
 
       if (!response.ok) {
