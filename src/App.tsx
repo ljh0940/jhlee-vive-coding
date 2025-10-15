@@ -5,7 +5,6 @@ import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import Lotto from '@/pages/Lotto';
-import Roulette from '@/pages/Roulette';
 import Admin from '@/pages/Admin';
 import OAuth2Redirect from '@/pages/OAuth2Redirect';
 
@@ -19,7 +18,6 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
           <Route path="/lotto" element={<ProtectedRoute><Lotto /></ProtectedRoute>} />
-          <Route path="/roulette" element={<ProtectedRoute><Roulette /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
