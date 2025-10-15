@@ -66,7 +66,7 @@ React Router를 사용한 클라이언트 사이드 라우팅:
 ### 인증 시스템
 - React Context를 사용한 클라이언트 사이드 인증 (`src/contexts/AuthContext.tsx`)
 - JWT 토큰 기반 인증 (백엔드 연동)
-- OAuth2 소셜 로그인 지원 (Google, GitHub)
+- OAuth2 소셜 로그인 지원 (Kakao)
 - localStorage를 사용한 토큰 영속성
 - `useAuth()` 훅을 통한 전역 사용자 상태 관리
 - `App.tsx`에서 AuthProvider가 전체 애플리케이션을 감싸고 있음
@@ -86,7 +86,7 @@ React Router를 사용한 클라이언트 사이드 라우팅:
   - `signUp()`: 회원가입
   - `signIn()`: 로그인
   - `getCurrentUser()`: 현재 사용자 정보 조회
-  - `initiateOAuth2Login()`: OAuth2 소셜 로그인 시작
+  - `initiateOAuth2Login()`: OAuth2 소셜 로그인 시작 (Kakao)
   - `saveTokens()`, `clearTokens()`: JWT 토큰 관리
   - `getOAuth2RedirectPath()`: OAuth2 리다이렉트 경로 관리
 

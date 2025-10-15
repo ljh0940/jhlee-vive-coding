@@ -92,7 +92,7 @@ class AuthService {
   }
 
   // OAuth2 로그인
-  initiateOAuth2Login(provider: 'google' | 'github', from?: string): void {
+  initiateOAuth2Login(provider: 'kakao', from?: string): void {
     if (from) {
       localStorage.setItem('oauth2_redirect_from', from);
     }

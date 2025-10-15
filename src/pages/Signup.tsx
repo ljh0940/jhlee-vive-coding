@@ -47,8 +47,8 @@ export default function Signup() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    if (provider === 'Google' || provider === 'GitHub') {
-      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github', from);
+    if (provider === 'Kakao') {
+      loginWithOAuth2('kakao', from);
     } else {
       console.log(`${provider} signup not implemented yet`);
     }
@@ -86,34 +86,6 @@ export default function Signup() {
             <div className="social-grid">
               <button
                 type="button"
-                onClick={() => handleSocialLogin("Google")}
-                className="btn btn-secondary flex items-center justify-center space-x-2"
-              >
-                <img
-                  src="/icons/google.svg"
-                  alt="Google"
-                  width={20}
-                  height={20}
-                />
-                <span>Google</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSocialLogin("GitHub")}
-                className="btn btn-secondary flex items-center justify-center space-x-2"
-              >
-                <img
-                  src="/icons/github.svg"
-                  alt="GitHub"
-                  width={20}
-                  height={20}
-                />
-                <span>GitHub</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => handleSocialLogin("Kakao")}
                 className="btn btn-secondary flex items-center justify-center space-x-2"
               >
@@ -124,20 +96,6 @@ export default function Signup() {
                   height={20}
                 />
                 <span>카카오</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSocialLogin("Naver")}
-                className="btn btn-secondary flex items-center justify-center space-x-2"
-              >
-                <img
-                  src="/icons/naver.svg"
-                  alt="네이버"
-                  width={20}
-                  height={20}
-                />
-                <span>네이버</span>
               </button>
             </div>
 

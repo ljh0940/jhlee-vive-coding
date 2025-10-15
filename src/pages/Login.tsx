@@ -32,8 +32,8 @@ export default function Login() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    if (provider === 'Google' || provider === 'GitHub') {
-      loginWithOAuth2(provider.toLowerCase() as 'google' | 'github', from);
+    if (provider === 'Kakao') {
+      loginWithOAuth2('kakao', from);
     } else {
       console.log(`${provider} login not implemented yet`);
     }
