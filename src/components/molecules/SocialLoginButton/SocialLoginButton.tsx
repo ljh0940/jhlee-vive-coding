@@ -1,7 +1,7 @@
 import { Button, ButtonProps } from '@/components/atoms/Button';
 
 export interface SocialLoginButtonProps extends Omit<ButtonProps, 'children'> {
-  provider: 'Google' | 'GitHub' | 'Kakao' | 'Naver';
+  provider: 'Kakao';
   onSocialLogin: (provider: string) => void;
 }
 
@@ -11,21 +11,9 @@ export const SocialLoginButton = ({
   ...buttonProps
 }: SocialLoginButtonProps) => {
   const providerConfig = {
-    Google: {
-      icon: '/icons/google.svg',
-      label: 'Google'
-    },
-    GitHub: {
-      icon: '/icons/github.svg',
-      label: 'GitHub'
-    },
     Kakao: {
       icon: '/icons/kakao.svg',
       label: '카카오'
-    },
-    Naver: {
-      icon: '/icons/naver.svg',
-      label: '네이버'
     }
   };
 

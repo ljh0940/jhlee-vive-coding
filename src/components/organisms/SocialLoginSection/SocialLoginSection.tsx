@@ -14,10 +14,7 @@ export const SocialLoginSection = ({ onSocialLogin }: SocialLoginSectionProps) =
       </div>
 
       <div className="social-grid">
-        <SocialLoginButton provider="Google" onSocialLogin={onSocialLogin} />
-        <SocialLoginButton provider="GitHub" onSocialLogin={onSocialLogin} />
         <SocialLoginButton provider="Kakao" onSocialLogin={onSocialLogin} />
-        <SocialLoginButton provider="Naver" onSocialLogin={onSocialLogin} />
       </div>
     </div>
   );
