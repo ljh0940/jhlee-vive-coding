@@ -42,6 +42,9 @@ export default function Home() {
                   <Link to="/lotto" className="btn btn-primary btn-large">
                     🎰 로또 생성기
                   </Link>
+                  <Link to="/profile" className="btn btn-outline btn-large">
+                    👤 내 프로필
+                  </Link>
                   {user.role === 'ADMIN' && (
                     <Link to="/admin" className="btn btn-secondary btn-large">
                       👥 관리자 페이지

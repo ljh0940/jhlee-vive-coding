@@ -10,6 +10,7 @@ interface User {
   picture: string | null;
   role: string;
   provider: string;
+  lastLoginAt?: string;
 }
 
 interface AuthContextType {
