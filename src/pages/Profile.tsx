@@ -12,6 +12,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
+  const [picture, setPicture] = useState(user?.picture || '');
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<LottoHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -24,6 +25,7 @@ export default function Profile() {
   useEffect(() => {
     if (user) {
       setName(user.name);
+      setPicture(user.picture || '');
     }
   }, [user]);
 
@@ -54,7 +56,7 @@ export default function Profile() {
 
     try {
       setLoading(true);
-      await userService.updateProfile(name.trim());
+      await userService.updateProfile(name.trim(), picture.trim() || undefined);
       alert('프로필이 업데이트되었습니다');
       setIsEditing(false);
       window.location.reload(); // AuthContext 갱신
@@ -127,27 +129,43 @@ export default function Profile() {
             )}
             <div className="flex-1">
               {isEditing ? (
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="이름"
-                  />
-                  <Button onClick={handleUpdateProfile} disabled={loading}>
-                    {loading ? '저장 중...' : '저장'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setName(user?.name || '');
-                    }}
-                    disabled={loading}
-                  >
-                    취소
-                  </Button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="이름"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">프로필 사진 URL</label>
+                    <input
+                      type="text"
+                      value={picture}
+                      onChange={(e) => setPicture(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://example.com/profile.jpg"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={handleUpdateProfile} disabled={loading}>
+                      {loading ? '저장 중...' : '저장'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setName(user?.name || '');
+                        setPicture(user?.picture || '');
+                      }}
+                      disabled={loading}
+                    >
+                      취소
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div>

@@ -36,11 +36,11 @@ export const userService = {
   },
 
   // 프로필 업데이트
-  async updateProfile(name: string): Promise<UserProfile> {
+  async updateProfile(name?: string, picture?: string): Promise<UserProfile> {
     const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
       method: 'PUT',
       headers: getAuthHeader(),
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, picture }),
     });
 
     if (!response.ok) {
