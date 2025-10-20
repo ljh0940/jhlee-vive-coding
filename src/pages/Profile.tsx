@@ -97,11 +97,6 @@ export default function Profile() {
     });
   };
 
-  const formatLastLogin = (dateString?: string) => {
-    if (!dateString) return '로그인 기록 없음';
-    return formatDate(dateString);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
       <div className="max-w-4xl mx-auto">
@@ -184,26 +179,7 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4 border-t border-gray-200">
-            <div>
-              <p className="text-sm text-gray-600">로그인 방식</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {user?.provider === 'LOCAL' ? '이메일' : user?.provider}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">권한</p>
-              <p className="text-lg font-semibold text-gray-900">{user?.role}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">마지막 로그인</p>
-              <p className="text-sm font-medium text-gray-700">
-                {formatLastLogin(user?.lastLoginAt)}
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-gray-200 mt-4">
             <Button
               variant="outline"
               onClick={handleDeleteAccount}
