@@ -10,10 +10,11 @@ interface User {
   name: string;
   picture?: string;
   role: 'USER' | 'ADMIN';
-  provider: 'GOOGLE' | 'GITHUB' | 'LOCAL';
+  provider: 'KAKAO' | 'LOCAL';
   providerId?: string;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt?: string;
   active: boolean;
 }
 
@@ -117,10 +118,8 @@ function Admin() {
 
   const getProviderBadgeColor = (provider: string) => {
     switch (provider) {
-      case 'GOOGLE':
-        return 'bg-red-100 text-red-800';
-      case 'GITHUB':
-        return 'bg-gray-100 text-gray-800';
+      case 'KAKAO':
+        return 'bg-yellow-100 text-yellow-800';
       case 'LOCAL':
         return 'bg-blue-100 text-blue-800';
       default:
@@ -291,6 +290,9 @@ function Admin() {
                       가입일
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                      마지막 로그인
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       관리
                     </th>
                   </tr>
@@ -298,7 +300,7 @@ function Admin() {
                 <tbody className="divide-y divide-gray-200">
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
                         등록된 회원이 없습니다.
                       </td>
                     </tr>
@@ -358,6 +360,9 @@ function Admin() {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                           {formatDate(u.createdAt)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {u.lastLoginAt ? formatDate(u.lastLoginAt) : '-'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
                           <div className="flex gap-2">
