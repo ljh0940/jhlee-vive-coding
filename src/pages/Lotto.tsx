@@ -6,19 +6,14 @@ import {
   LottoNumberSet
 } from "@/components";
 import { getRecentLotteryNumbers } from "@/services/lotteryService";
-
-interface LottoHistoryItem {
-  numbers: number[];
-  bonus: number;
-  timestamp: string;
-}
-
-const STORAGE_KEY = 'lotto_history';
-const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000; // 30일
+import { lottoService, type LottoHistoryItem } from "@/services/lottoService";
 
 export default function LottoPage() {
-  const [history, setHistory] = useState<Array<{numbers: number[], bonus: number, timestamp: Date}>>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [history, setHistory] = useState<LottoHistoryItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [isLoadingWinning, setIsLoadingWinning] = useState(false);
   const [winningDataSource, setWinningDataSource] = useState<'api' | 'sample'>('sample');
   const [recentWinningNumbers, setRecentWinningNumbers] = useState([
@@ -30,101 +25,62 @@ export default function LottoPage() {
   ]);
 
   const ITEMS_PER_PAGE = 5;
-  const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentHistory = history.slice(startIndex, endIndex);
 
-  // localStorage에서 히스토리 로드 및 오래된 항목 필터링
-  const loadHistoryFromStorage = (): LottoHistoryItem[] => {
+  // 로또 이력 로드
+  const loadHistory = async (page: number = 0) => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return [];
-
-      const items: LottoHistoryItem[] = JSON.parse(stored);
-      const now = Date.now();
-
-      // 한 달 이내의 항목만 필터링
-      return items.filter(item => {
-        const itemDate = new Date(item.timestamp).getTime();
-        return now - itemDate < ONE_MONTH_MS;
-      });
+      setLoading(true);
+      const data = await lottoService.getLottoHistories(page, ITEMS_PER_PAGE);
+      setHistory(data.content);
+      setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
+      setCurrentPage(page);
     } catch (error) {
-      console.error('Failed to load history:', error);
-      return [];
+      console.error('Failed to load lotto history:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // localStorage에 히스토리 저장
-  const saveHistoryToStorage = (items: LottoHistoryItem[]) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (error) {
-      console.error('Failed to save history:', error);
-    }
-  };
-
-  // 컴포넌트 마운트 시 localStorage에서 히스토리 로드
+  // 컴포넌트 마운트 시 이력 로드
   useEffect(() => {
-    const storedHistory = loadHistoryFromStorage();
-    const parsedHistory = storedHistory.map(item => ({
-      numbers: item.numbers,
-      bonus: item.bonus,
-      timestamp: new Date(item.timestamp)
-    }));
-    setHistory(parsedHistory);
-
-    // 필터링된 히스토리를 다시 저장 (오래된 항목 제거)
-    if (storedHistory.length !== parsedHistory.length) {
-      saveHistoryToStorage(storedHistory);
-    }
+    loadHistory();
   }, []);
 
-  const handleNumbersGenerated = (numbers: number[], bonus: number) => {
-    const newItem = {
-      numbers,
-      bonus,
-      timestamp: new Date()
-    };
-
-    const updatedHistory = [newItem, ...history];
-    setHistory(updatedHistory);
-    setCurrentPage(1); // 새 항목 추가 시 첫 페이지로 이동
-
-    // localStorage에 저장
-    const storageItems: LottoHistoryItem[] = updatedHistory.map(item => ({
-      numbers: item.numbers,
-      bonus: item.bonus,
-      timestamp: item.timestamp.toISOString()
-    }));
-    saveHistoryToStorage(storageItems);
-  };
-
-  const handleDeleteItem = (index: number) => {
-    const actualIndex = startIndex + index;
-    const updatedHistory = history.filter((_, i) => i !== actualIndex);
-    setHistory(updatedHistory);
-
-    // 현재 페이지가 비어있으면 이전 페이지로 이동
-    const newTotalPages = Math.ceil(updatedHistory.length / ITEMS_PER_PAGE);
-    if (currentPage > newTotalPages && newTotalPages > 0) {
-      setCurrentPage(newTotalPages);
+  const handleNumbersGenerated = async (numbers: number[], bonus: number) => {
+    try {
+      await lottoService.saveLottoHistory({ numbers, bonusNumber: bonus });
+      // 저장 후 첫 페이지로 이동하여 새로 저장된 항목 표시
+      await loadHistory(0);
+    } catch (error) {
+      console.error('Failed to save lotto history:', error);
+      alert('로또 번호 저장에 실패했습니다');
     }
-
-    // localStorage에 저장
-    const storageItems: LottoHistoryItem[] = updatedHistory.map(item => ({
-      numbers: item.numbers,
-      bonus: item.bonus,
-      timestamp: item.timestamp.toISOString()
-    }));
-    saveHistoryToStorage(storageItems);
   };
 
-  const handleDeleteAll = () => {
+  const handleDeleteItem = async (id: number) => {
+    try {
+      await lottoService.deleteLottoHistory(id);
+      // 현재 페이지가 비어있으면 이전 페이지로 이동
+      const remainingItems = totalElements - 1;
+      const newTotalPages = Math.ceil(remainingItems / ITEMS_PER_PAGE);
+      const newPage = currentPage >= newTotalPages ? Math.max(0, newTotalPages - 1) : currentPage;
+      await loadHistory(newPage);
+    } catch (error) {
+      console.error('Failed to delete lotto history:', error);
+      alert('삭제에 실패했습니다');
+    }
+  };
+
+  const handleDeleteAll = async () => {
     if (window.confirm('모든 생성 기록을 삭제하시겠습니까?')) {
-      setHistory([]);
-      setCurrentPage(1);
-      saveHistoryToStorage([]);
+      try {
+        await lottoService.deleteAllLottoHistories();
+        await loadHistory(0);
+      } catch (error) {
+        console.error('Failed to delete all lotto histories:', error);
+        alert('전체 삭제에 실패했습니다');
+      }
     }
   };
 
@@ -137,7 +93,6 @@ export default function LottoPage() {
         setRecentWinningNumbers(result.data);
         setWinningDataSource('api');
       } else {
-        // success가 false인 경우 fallback 데이터 사용
         setRecentWinningNumbers(result.data);
         setWinningDataSource('sample');
       }
@@ -159,6 +114,16 @@ export default function LottoPage() {
     if (num <= 30) return 'bg-red-500';
     if (num <= 40) return 'bg-gray-600';
     return 'bg-green-500';
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -253,13 +218,21 @@ export default function LottoPage() {
           )}
         </div>
 
-        {history.length > 0 && (
+        {/* 생성 이력 */}
+        {loading ? (
+          <Card className="p-4">
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              <p className="mt-2 text-sm text-gray-600">불러오는 중...</p>
+            </div>
+          </Card>
+        ) : totalElements > 0 ? (
           <Card className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-gray-800">내가 생성한 번호</h3>
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-gray-500">
-                  {history.length}개 (30일간 보관)
+                  총 {totalElements}개
                 </span>
                 <button
                   onClick={handleDeleteAll}
@@ -270,26 +243,21 @@ export default function LottoPage() {
               </div>
             </div>
             <div className="space-y-2">
-              {currentHistory.map((item, index) => (
-                <Card key={startIndex + index} variant="glass" className="p-2">
+              {history.map((item) => (
+                <Card key={item.id} variant="glass" className="p-2">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
                       <span className="text-xs text-gray-600 font-medium min-w-[120px]">
-                        {item.timestamp.toLocaleDateString('ko-KR', {
-                          month: 'numeric',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {formatDate(item.createdAt)}
                       </span>
                       <LottoNumberSet
                         numbers={item.numbers}
-                        bonusNumber={item.bonus}
+                        bonusNumber={item.bonusNumber}
                         size="small"
                       />
                     </div>
                     <button
-                      onClick={() => handleDeleteItem(index)}
+                      onClick={() => handleDeleteItem(item.id)}
                       className="ml-2 text-gray-400 hover:text-red-600 transition-colors"
                       title="삭제"
                     >
@@ -306,32 +274,32 @@ export default function LottoPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-center space-x-2 mt-4">
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => loadHistory(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   이전
                 </button>
 
                 <div className="flex items-center space-x-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  {Array.from({ length: totalPages }, (_, i) => i).map(page => (
                     <button
                       key={page}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => loadHistory(page)}
                       className={`px-2.5 py-1 text-xs font-medium rounded-md ${
                         currentPage === page
                           ? 'bg-indigo-600 text-white'
                           : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      {page}
+                      {page + 1}
                     </button>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => loadHistory(Math.min(totalPages - 1, currentPage + 1))}
+                  disabled={currentPage === totalPages - 1}
                   className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   다음
@@ -339,7 +307,7 @@ export default function LottoPage() {
               </div>
             )}
           </Card>
-        )}
+        ) : null}
 
         {/* 하단 네비게이션 */}
         <div className="text-center mt-6">
