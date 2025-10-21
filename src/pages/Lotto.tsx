@@ -188,11 +188,7 @@ export default function LottoPage() {
               ))}
             </div>
           ) : weeklyRecommendations ? (
-            <>
-              <p className="text-xs text-gray-500 mb-2">
-                역대 당첨번호와 겹치지 않는 번호입니다
-              </p>
-              <div className="space-y-1.5">
+            <div className="space-y-1.5">
                 {weeklyRecommendations.recommendations.map((rec, index) => (
                   <div key={index} className="card-glass p-2">
                     <div className="flex items-center justify-between">
@@ -216,8 +212,7 @@ export default function LottoPage() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </>
+            </div>
           ) : (
             <div className="text-center py-4">
               <p className="text-sm text-gray-500">추천 번호를 불러올 수 없습니다</p>
