@@ -18,6 +18,18 @@ export interface LottoHistoryPage {
   size: number;
 }
 
+export interface RecommendationSet {
+  numbers: number[];
+  bonusNumber: number;
+}
+
+export interface WeeklyRecommendation {
+  id: string;
+  weekKey: string;
+  generatedAt: string;
+  recommendations: RecommendationSet[];
+}
+
 const getAuthHeader = () => {
   const token = localStorage.getItem('accessToken');
   if (!token) {
@@ -106,6 +118,17 @@ export const lottoService = {
 
     if (!response.ok) {
       throw new Error('로또 이력 개수 조회에 실패했습니다');
+    }
+
+    return response.json();
+  },
+
+  // 이번 주 추천 로또 번호 조회
+  async getWeeklyRecommendations(): Promise<WeeklyRecommendation> {
+    const response = await fetch(`${API_BASE_URL}/api/lottery/weekly-recommendations`);
+
+    if (!response.ok) {
+      throw new Error('주간 추천 번호 조회에 실패했습니다');
     }
 
     return response.json();

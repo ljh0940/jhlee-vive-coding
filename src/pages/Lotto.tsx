@@ -6,7 +6,7 @@ import {
   LottoNumberSet
 } from "@/components";
 import { getRecentLotteryNumbers } from "@/services/lotteryService";
-import { lottoService, type LottoHistoryItem } from "@/services/lottoService";
+import { lottoService, type LottoHistoryItem, type WeeklyRecommendation } from "@/services/lottoService";
 
 export default function LottoPage() {
   const [history, setHistory] = useState<LottoHistoryItem[]>([]);
@@ -23,6 +23,8 @@ export default function LottoPage() {
     { round: 1093, numbers: [3, 12, 18, 26, 33, 41], bonus: 22, date: '2023-11-25' },
     { round: 1092, numbers: [5, 15, 20, 28, 36, 42], bonus: 17, date: '2023-11-18' }
   ]);
+  const [weeklyRecommendations, setWeeklyRecommendations] = useState<WeeklyRecommendation | null>(null);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
   const ITEMS_PER_PAGE = 5;
 
@@ -104,8 +106,21 @@ export default function LottoPage() {
     }
   };
 
+  const fetchWeeklyRecommendations = async () => {
+    setIsLoadingRecommendations(true);
+    try {
+      const data = await lottoService.getWeeklyRecommendations();
+      setWeeklyRecommendations(data);
+    } catch (error) {
+      console.error('Failed to fetch weekly recommendations:', error);
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
   useEffect(() => {
     fetchWinningNumbers();
+    fetchWeeklyRecommendations();
   }, []);
 
   const getNumberColor = (num: number) => {
@@ -137,6 +152,84 @@ export default function LottoPage() {
 
         {/* 로또 생성기 */}
         <LottoGenerator onNumbersGenerated={handleNumbersGenerated} />
+
+        {/* 이번 주 추천 번호 */}
+        <div className="card p-3 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-gray-800 flex items-center">
+              <span className="mr-1.5">✨</span>
+              이번 주 추천 번호
+            </h3>
+            <div className="flex items-center space-x-1.5">
+              {isLoadingRecommendations ? (
+                <div className="flex items-center space-x-1.5">
+                  <div className="w-3 h-3 bg-indigo-600 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-gray-600">로딩중</span>
+                </div>
+              ) : weeklyRecommendations && (
+                <button
+                  onClick={fetchWeeklyRecommendations}
+                  className="text-xs text-indigo-600 hover:text-indigo-800"
+                  title="새로고침"
+                >
+                  ↻
+                </button>
+              )}
+            </div>
+          </div>
+
+          {isLoadingRecommendations ? (
+            <div className="space-y-2">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="card-glass p-2 animate-pulse">
+                  <div className="flex items-center space-x-2">
+                    <div className="h-3 bg-gray-300 rounded w-6"></div>
+                    <div className="flex space-x-1 ml-auto">
+                      {[...Array(7)].map((_, i) => (
+                        <div key={i} className="w-7 h-7 bg-gray-300 rounded-lg"></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : weeklyRecommendations ? (
+            <>
+              <p className="text-xs text-gray-500 mb-2">
+                역대 당첨번호와 겹치지 않는 번호입니다 ({weeklyRecommendations.weekKey})
+              </p>
+              <div className="space-y-1.5">
+                {weeklyRecommendations.recommendations.map((rec, index) => (
+                  <div key={index} className="card-glass p-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-indigo-600 min-w-[20px]">
+                        #{index + 1}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        {rec.numbers.map((num, numIndex) => (
+                          <div
+                            key={numIndex}
+                            className={`w-7 h-7 ${getNumberColor(num)} text-white rounded-lg flex items-center justify-center text-xs font-bold`}
+                          >
+                            {num}
+                          </div>
+                        ))}
+                        <div className="mx-0.5 text-gray-400 text-xs">+</div>
+                        <div className="w-7 h-7 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-lg flex items-center justify-center text-xs font-bold border border-yellow-300">
+                          {rec.bonusNumber}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-500">추천 번호를 불러올 수 없습니다</p>
+            </div>
+          )}
+        </div>
 
         {/* 최근 당첨번호 */}
         <div className="card p-3 mb-4">
