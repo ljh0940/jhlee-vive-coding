@@ -131,6 +131,16 @@ export default function LottoPage() {
     return 'bg-green-500';
   };
 
+  const formatWeekKey = (weekKey: string) => {
+    // "2025-W43" → "2025년 43주차"
+    const match = weekKey.match(/(\d{4})-W(\d{2})/);
+    if (match) {
+      const [, year, week] = match;
+      return `${year}년 ${parseInt(week)}주차`;
+    }
+    return weekKey;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
@@ -155,27 +165,11 @@ export default function LottoPage() {
 
         {/* 이번 주 추천 번호 */}
         <div className="card p-3 mb-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3">
             <h3 className="text-base font-semibold text-gray-800 flex items-center">
               <span className="mr-1.5">✨</span>
-              이번 주 추천 번호
+              {weeklyRecommendations ? `${formatWeekKey(weeklyRecommendations.weekKey)} 추천 번호` : '이번 주 추천 번호'}
             </h3>
-            <div className="flex items-center space-x-1.5">
-              {isLoadingRecommendations ? (
-                <div className="flex items-center space-x-1.5">
-                  <div className="w-3 h-3 bg-indigo-600 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-gray-600">로딩중</span>
-                </div>
-              ) : weeklyRecommendations && (
-                <button
-                  onClick={fetchWeeklyRecommendations}
-                  className="text-xs text-indigo-600 hover:text-indigo-800"
-                  title="새로고침"
-                >
-                  ↻
-                </button>
-              )}
-            </div>
           </div>
 
           {isLoadingRecommendations ? (
@@ -196,7 +190,7 @@ export default function LottoPage() {
           ) : weeklyRecommendations ? (
             <>
               <p className="text-xs text-gray-500 mb-2">
-                역대 당첨번호와 겹치지 않는 번호입니다 ({weeklyRecommendations.weekKey})
+                역대 당첨번호와 겹치지 않는 번호입니다
               </p>
               <div className="space-y-1.5">
                 {weeklyRecommendations.recommendations.map((rec, index) => (
