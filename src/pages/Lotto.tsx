@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import {
   LottoGenerator,
   Card,
-  LottoNumberSet
+  LottoNumberSet,
+  LottoComparisonResult
 } from "@/components";
 import { getRecentLotteryNumbers } from "@/services/lotteryService";
 import { lottoService, type LottoHistoryItem, type WeeklyRecommendation } from "@/services/lottoService";
+import { compareWithMultipleDraws, type ComparisonResult } from "@/utils/lottoComparison";
 
 export default function LottoPage() {
   const [history, setHistory] = useState<LottoHistoryItem[]>([]);
@@ -25,6 +27,8 @@ export default function LottoPage() {
   ]);
   const [weeklyRecommendations, setWeeklyRecommendations] = useState<WeeklyRecommendation | null>(null);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [comparisonResults, setComparisonResults] = useState<Map<number, ComparisonResult & { bestRound?: number; bestDate?: string }>>(new Map());
+  const [showingComparison, setShowingComparison] = useState<Set<number>>(new Set());
 
   const ITEMS_PER_PAGE = 5;
 
@@ -104,6 +108,32 @@ export default function LottoPage() {
     } finally {
       setIsLoadingWinning(false);
     }
+  };
+
+  const handleCheckWinning = (item: LottoHistoryItem) => {
+    if (recentWinningNumbers.length === 0) {
+      alert('당첨번호를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    const result = compareWithMultipleDraws(
+      item.numbers,
+      item.bonusNumber,
+      recentWinningNumbers
+    );
+
+    setComparisonResults(new Map(comparisonResults.set(item.id, result)));
+    setShowingComparison(new Set(showingComparison.add(item.id)));
+  };
+
+  const toggleComparison = (id: number) => {
+    const newSet = new Set(showingComparison);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setShowingComparison(newSet);
   };
 
   const fetchWeeklyRecommendations = async () => {
@@ -325,31 +355,73 @@ export default function LottoPage() {
               </div>
             </div>
             <div className="space-y-2">
-              {history.map((item) => (
-                <Card key={item.id} variant="glass" className="p-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
-                      <span className="text-xs text-gray-600 font-medium min-w-[120px]">
-                        {formatDate(item.createdAt)}
-                      </span>
-                      <LottoNumberSet
-                        numbers={item.numbers}
-                        bonusNumber={item.bonusNumber}
-                        size="small"
-                      />
+              {history.map((item) => {
+                const result = comparisonResults.get(item.id);
+                const isShowing = showingComparison.has(item.id);
+
+                return (
+                  <Card key={item.id} variant="glass" className="p-2">
+                    <div className="flex flex-col space-y-2">
+                      {/* 기본 정보 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-1">
+                          <span className="text-xs text-gray-600 font-medium min-w-[120px]">
+                            {formatDate(item.createdAt)}
+                          </span>
+                          {!isShowing && (
+                            <LottoNumberSet
+                              numbers={item.numbers}
+                              bonusNumber={item.bonusNumber}
+                              size="small"
+                            />
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {/* 당첨 확인 버튼 */}
+                          <button
+                            onClick={() => {
+                              if (!result) {
+                                handleCheckWinning(item);
+                              } else {
+                                toggleComparison(item.id);
+                              }
+                            }}
+                            className="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                          >
+                            {isShowing ? '접기' : result ? '결과' : '확인'}
+                          </button>
+                          {/* 삭제 버튼 */}
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            title="삭제"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 비교 결과 */}
+                      {isShowing && result && (
+                        <div className="pt-2 border-t border-gray-200">
+                          <LottoComparisonResult
+                            result={result}
+                            myNumbers={item.numbers}
+                            myBonus={item.bonusNumber}
+                          />
+                          {result.bestRound && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              {result.bestRound}회 ({result.bestDate}) 기준
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="ml-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="삭제"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
 
             {/* 페이지네이션 */}

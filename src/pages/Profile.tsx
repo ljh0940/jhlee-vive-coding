@@ -5,7 +5,9 @@ import { Card } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
 import { userService } from '@/services/userService';
 import { lottoService, type LottoHistoryItem } from '@/services/lottoService';
-import { LottoNumberSet } from '@/components';
+import { LottoNumberSet, LottoComparisonResult } from '@/components';
+import { getRecentLotteryNumbers, type LotteryNumber } from '@/services/lotteryService';
+import { compareWithMultipleDraws, type ComparisonResult } from '@/utils/lottoComparison';
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -19,6 +21,9 @@ export default function Profile() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [winningNumbers, setWinningNumbers] = useState<LotteryNumber[]>([]);
+  const [comparisonResults, setComparisonResults] = useState<Map<number, ComparisonResult & { bestRound?: number; bestDate?: string }>>(new Map());
+  const [showingComparison, setShowingComparison] = useState<Set<number>>(new Set());
 
   const ITEMS_PER_PAGE = 10;
 
@@ -31,7 +36,45 @@ export default function Profile() {
 
   useEffect(() => {
     loadHistory();
+    loadWinningNumbers();
   }, []);
+
+  const loadWinningNumbers = async () => {
+    try {
+      const result = await getRecentLotteryNumbers();
+      if (result.success && result.data.length > 0) {
+        setWinningNumbers(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load winning numbers:', error);
+    }
+  };
+
+  const handleCheckWinning = (item: LottoHistoryItem) => {
+    if (winningNumbers.length === 0) {
+      alert('당첨번호를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    const result = compareWithMultipleDraws(
+      item.numbers,
+      item.bonusNumber,
+      winningNumbers
+    );
+
+    setComparisonResults(new Map(comparisonResults.set(item.id, result)));
+    setShowingComparison(new Set(showingComparison.add(item.id)));
+  };
+
+  const toggleComparison = (id: number) => {
+    const newSet = new Set(showingComparison);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setShowingComparison(newSet);
+  };
 
   const loadHistory = async (page: number = 0) => {
     try {
@@ -213,22 +256,62 @@ export default function Profile() {
           ) : (
             <>
               <div className="space-y-3">
-                {history.map((item) => (
-                  <div key={item.id} className="card-glass p-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-xs text-gray-600 font-medium min-w-[140px]">
-                          {formatDate(item.createdAt)}
-                        </span>
-                        <LottoNumberSet
-                          numbers={item.numbers}
-                          bonusNumber={item.bonusNumber}
-                          size="small"
-                        />
+                {history.map((item) => {
+                  const result = comparisonResults.get(item.id);
+                  const isShowing = showingComparison.has(item.id);
+
+                  return (
+                    <div key={item.id} className="card-glass p-3">
+                      <div className="flex flex-col space-y-2">
+                        {/* 기본 정보 */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <span className="text-xs text-gray-600 font-medium min-w-[140px]">
+                              {formatDate(item.createdAt)}
+                            </span>
+                            {!isShowing && (
+                              <LottoNumberSet
+                                numbers={item.numbers}
+                                bonusNumber={item.bonusNumber}
+                                size="small"
+                              />
+                            )}
+                          </div>
+
+                          {/* 당첨 확인 버튼 */}
+                          <button
+                            onClick={() => {
+                              if (!result) {
+                                handleCheckWinning(item);
+                              } else {
+                                toggleComparison(item.id);
+                              }
+                            }}
+                            className="ml-2 px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                          >
+                            {isShowing ? '접기' : result ? '결과보기' : '당첨확인'}
+                          </button>
+                        </div>
+
+                        {/* 비교 결과 */}
+                        {isShowing && result && (
+                          <div className="pt-2 border-t border-gray-200">
+                            <LottoComparisonResult
+                              result={result}
+                              myNumbers={item.numbers}
+                              myBonus={item.bonusNumber}
+                            />
+                            {result.bestRound && (
+                              <div className="mt-2 text-xs text-gray-500">
+                                {result.bestRound}회 ({result.bestDate}) 당첨번호 기준
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* 페이지네이션 */}

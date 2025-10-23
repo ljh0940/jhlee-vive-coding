@@ -9,6 +9,7 @@ export { Logo } from './atoms/Logo';
 export { SocialLoginButton } from './molecules/SocialLoginButton';
 export { LottoNumberSet } from './molecules/LottoNumberSet';
 export { UserProfile } from './molecules/UserProfile';
+export { LottoComparisonResult } from './molecules/LottoComparisonResult';
 
 // Organisms
 export { SocialLoginSection } from './organisms/SocialLoginSection';
